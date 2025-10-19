@@ -1,0 +1,60 @@
+from rest_framework import serializers
+from .models import Ticket, Passenger, Booking
+
+class CitySerializer(serializers.Serializer):
+    CityName = serializers.CharField()
+
+class TicketSerializer(serializers.ModelSerializer):
+    origin = serializers.StringRelatedField(read_only = True)
+    destination = serializers.StringRelatedField(read_only = True)
+
+    class Meta:
+        model = Ticket
+        exclude = ['origin_airport','dest_airport','airplane_model','flight_law','price_detail','type',]
+
+class TicketDetailSerializer(serializers.ModelSerializer):
+    origin = serializers.StringRelatedField(read_only = True)
+    destination = serializers.StringRelatedField(read_only = True)
+
+    class Meta:
+        model = Ticket
+        exclude = ['type',]
+
+class PassengerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passenger
+        fields = ['first_name', 'last_name', 'national_id', 'birth_date', 'gender', 'nationality']
+
+class BookingSerializer(serializers.ModelSerializer):
+    passengers = PassengerSerializer(many=True)
+
+    class Meta:
+        model = Booking
+        fields = ['ticket', 'passengers']
+        read_only_fields = ['ticket',]
+
+    def create(self, validated_data):
+        passengers_data = validated_data.pop('passengers')
+        booking = Booking.objects.create(**validated_data)
+        for passenger_data in passengers_data:
+            passenger = Passenger.objects.create(**passenger_data)
+            booking.passengers.add(passenger)
+        booking.ticket.remaining_capacity -= len(passengers_data)
+        booking.ticket.save()
+        booking.save()
+        return booking
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    origin = serializers.CharField(source='ticket.origin.CityName', read_only=True)
+    destination = serializers.CharField(source='ticket.destination.CityName', read_only=True)
+    date = serializers.DateField(source='ticket.date', read_only=True)
+    depart_time = serializers.TimeField(source='ticket.depart_time', read_only=True)
+    passenger_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Booking
+        fields = ['origin', 'destination', 'date', 'depart_time', 'passenger_count']
+
+    def get_passenger_count(self, obj):
+        return obj.passengers.count()
