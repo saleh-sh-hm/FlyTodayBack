@@ -1,8 +1,6 @@
 from .serializers import UserSerializer
 from accounts.models import User
 from rest_framework import viewsets, mixins
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from permissions import IsOwner
 
 class UserViewSet(viewsets.GenericViewSet,

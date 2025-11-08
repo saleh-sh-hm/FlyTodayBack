@@ -3,7 +3,7 @@ from django.conf import settings
 
 
 class City(models.Model):
-    CityName = models.CharField()
+    CityName = models.CharField(max_length=10)
 
     def __str__(self):
         return self.CityName
@@ -20,7 +20,7 @@ class Ticket(models.Model) :
     flight_number = models.CharField(blank=True,max_length=20)
     cabin_class = models.CharField(blank=True,max_length=20)
     remaining_capacity = models.PositiveIntegerField(blank=True,null=True)
-    allowed_loggage = models.PositiveIntegerField(blank=True,null=True)
+    allowed_luggage = models.PositiveIntegerField(blank=True,null=True)
     price = models.PositiveIntegerField(blank=True,null=True)
 
     origin_airport = models.CharField(blank=True,max_length=50)
@@ -50,6 +50,7 @@ class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='bookings')
     passengers = models.ManyToManyField(Passenger)
+    created_at = models.DateField()
 
     def __str__(self):
-        return f'Booking {self.id} by {self.user.username}'
+        return f'Booking number {self.id} by {self.user.username}'
