@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from .models import Ticket
+from .models import Ticket,City
 
 
 class TicketFilter(filters.FilterSet):
@@ -11,4 +11,12 @@ class TicketFilter(filters.FilterSet):
         fields = {
             'type' : ['exact'],
             'price' : ['gt','lt','range'],
+            'date' : ['exact']
+                  }
+        
+class CityFilter(filters.FilterSet):
+    class Meta:
+        model = City
+        fields = {
+            'type' : ['exact'],
                   }

@@ -4,13 +4,14 @@ from .serializers import CitySerializer,TicketSerializer,TicketDetailSerializer,
 from rest_framework import generics,viewsets,mixins,status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from .filters import TicketFilter
+from .filters import TicketFilter,CityFilter
 
 
 
 class CityList(generics.ListAPIView):
     queryset = City.objects.all()
-    serializer_class = CitySerializer    
+    serializer_class = CitySerializer
+    filterset_class = CityFilter    
     # def get(self,request):
     #     names = City.objects.all()
     #     ser_data = CitySerializer(instance=names, many=True)
@@ -21,14 +22,11 @@ class TicketView(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.RetrieveMo
     queryset = Ticket.objects.all()
     filterset_class = TicketFilter
     
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return TicketSerializer
-        if self.action == 'retrieve':
-            return TicketDetailSerializer    
-        if self.action == 'book_flight':
-            return BookingSerializer
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    serializer_action_classes = {
+    'list': TicketSerializer,
+    'retrieve': TicketDetailSerializer,
+    'book_flight': BookingSerializer,
+    }
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def book_flight(self, request, pk=None):
@@ -39,6 +37,10 @@ class TicketView(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.RetrieveMo
 
         if ticket.remaining_capacity < passenger_count:
             return Response('no capacity', status=status.HTTP_400_BAD_REQUEST)
+        
+        now = timezone.localdate()
+        if ticket.date < now:
+            return Response('ticket has expired', status=status.HTTP_400_BAD_REQUEST)
 
         booking = serializer.save(user=request.user, ticket=ticket)
         return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)

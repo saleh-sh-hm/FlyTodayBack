@@ -1,9 +1,12 @@
+import uuid
 from django.db import models
 from django.conf import settings
 
 
 class City(models.Model):
+    TYPE_CHOICES = [('IN','Inner City'),('OUT','Foreign City')]
     CityName = models.CharField(max_length=10)
+    type = models.CharField(max_length=20,choices=TYPE_CHOICES)
 
     def __str__(self):
         return self.CityName
@@ -23,12 +26,13 @@ class Ticket(models.Model) :
     allowed_luggage = models.PositiveIntegerField(blank=True,null=True)
     price = models.PositiveIntegerField(blank=True,null=True)
 
+    TYPE_CHOICES = [('IN','Domestic Flight'),('OUT','Foreign Flight')]
     origin_airport = models.CharField(blank=True,max_length=50)
     dest_airport = models.CharField(blank=True,max_length=50)
     airplane_model = models.CharField(blank=True,max_length=50)
     flight_law = models.TextField(blank=True)
     price_detail = models.TextField(blank=True)
-    type = models.CharField(blank=True,null=True,max_length=20)
+    type = models.CharField(blank=True,null=True,max_length=20,choices=TYPE_CHOICES)
     
     
     def __str__(self):
@@ -47,10 +51,14 @@ class Passenger(models.Model):
 
 
 class Booking(models.Model):
+    def generate_tracking_number():
+        return uuid.uuid4().hex[:8].upper()
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='bookings')
     passengers = models.ManyToManyField(Passenger)
     created_at = models.DateField()
+    tracking_number = models.CharField(unique=True, editable=False, default=generate_tracking_number)
 
     def __str__(self):
         return f'Booking number {self.id} by {self.user.username}'

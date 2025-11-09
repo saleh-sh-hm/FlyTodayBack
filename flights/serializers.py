@@ -23,7 +23,7 @@ class TicketDetailSerializer(serializers.ModelSerializer):
 class PassengerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Passenger
-        fields = ['first_name', 'last_name', 'national_id', 'birth_date', 'gender', 'nationality']
+        exclude = ['id',]
 
 class BookingSerializer(serializers.ModelSerializer):
     passengers = PassengerSerializer(many=True)
@@ -36,9 +36,11 @@ class BookingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         passengers_data = validated_data.pop('passengers')
         booking = Booking.objects.create(**validated_data)
-        for passenger_data in passengers_data:
-            passenger = Passenger.objects.create(**passenger_data)
-            booking.passengers.add(passenger)
+
+        passengers = [Passenger(**data) for data in passengers_data]
+        Passenger.objects.bulk_create(passengers,returning=True)
+        booking.passengers.add(*passengers)
+
         booking.ticket.remaining_capacity -= len(passengers_data)
         booking.ticket.save()
         booking.save()
@@ -50,11 +52,12 @@ class OrderSerializer(serializers.ModelSerializer):
     destination = serializers.CharField(source='ticket.destination.CityName', read_only=True)
     date = serializers.DateField(source='ticket.date', read_only=True)
     depart_time = serializers.TimeField(source='ticket.depart_time', read_only=True)
-    passenger_count = serializers.SerializerMethodField()
+    passenger_count = serializers.SerializerMethodField(read_only=True)
+    tracking_number = serializers.CharField(read_only=True)
 
     class Meta:
         model = Booking
-        fields = ['origin', 'destination', 'date', 'depart_time', 'passenger_count']
+        fields = ['origin', 'destination', 'date', 'depart_time', 'passenger_count','tracking_number']
 
     def get_passenger_count(self, obj):
         return obj.passengers.count()
