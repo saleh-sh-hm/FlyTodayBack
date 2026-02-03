@@ -38,7 +38,7 @@ class BookingSerializer(serializers.ModelSerializer):
         booking = Booking.objects.create(**validated_data)
 
         passengers = [Passenger(**data) for data in passengers_data]
-        Passenger.objects.bulk_create(passengers,returning=True)
+        Passenger.objects.bulk_create(passengers)
         booking.passengers.add(*passengers)
 
         booking.ticket.remaining_capacity -= len(passengers_data)

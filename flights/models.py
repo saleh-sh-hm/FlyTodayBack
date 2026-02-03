@@ -16,9 +16,9 @@ class Ticket(models.Model) :
     origin = models.ForeignKey(City,on_delete=models.CASCADE,related_name='origins')
     destination = models.ForeignKey(City,on_delete=models.CASCADE,related_name='destinations')
     date = models.DateField(blank=True,null=True)
-    depart_time = models.TimeField(blank=True,null=True)
-    arrival_time = models.TimeField(blank=True,null=True)
-    travel_time = models.TimeField(blank=True,null=True)
+    depart_time = models.CharField(max_length=5,blank=True,null=True)
+    arrival_time = models.CharField(max_length=5,blank=True,null=True)
+    travel_time = models.CharField(max_length=5,blank=True,null=True)
     airline = models.CharField(blank=True,max_length=20)
     flight_number = models.CharField(blank=True,max_length=20)
     cabin_class = models.CharField(blank=True,max_length=20)
@@ -57,7 +57,7 @@ class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='bookings')
     passengers = models.ManyToManyField(Passenger)
-    created_at = models.DateField()
+    # created_at = models.DateField()
     tracking_number = models.CharField(unique=True, editable=False, default=generate_tracking_number)
 
     def __str__(self):

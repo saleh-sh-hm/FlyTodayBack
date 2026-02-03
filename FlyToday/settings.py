@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'drf_spectacular',
+    "corsheaders",
     'flights',
     'accounts',
 ]
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = 'FlyToday.urls'
@@ -136,6 +138,12 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'My API',
+    'DECRIPTION': 'API documentation',
+    'VERSION' : '1.0.0'
+}
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=60),
@@ -148,3 +156,6 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'project description',
     'VERSION': '1.0.0',
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
+

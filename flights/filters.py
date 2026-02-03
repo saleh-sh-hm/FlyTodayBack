@@ -12,11 +12,11 @@ class TicketFilter(filters.FilterSet):
             'type' : ['exact'],
             'price' : ['gt','lt','range'],
             'date' : ['exact']
-                  }
+        }
         
 class CityFilter(filters.FilterSet):
     class Meta:
         model = City
         fields = {
             'type' : ['exact'],
-                  }
+        }
